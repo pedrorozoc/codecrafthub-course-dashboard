@@ -830,7 +830,7 @@
                 "<button class=\"btn btn-ghost btn-sm\" data-action=\"edit\" data-id=\"" +
                 id +
                 "\">Edit</button>" +
-                "<button class=\"btn btn-danger btn-sm\" data-action=\"delete\" data-id=\"" +
+                "<button class=\"btn btn-danger btn-sm\" data-action=\"delete\" onclick=\"deleteCourseById(this.dataset.id)\" data-id=\"" +
                 id +
                 "\">Remove</button>" +
                 "</div></td>" +
@@ -846,8 +846,10 @@
             rows +
             "</tbody></table></div>";
 
-          courseListEl.querySelectorAll("[data-action]").forEach(function (btn) {
-            btn.addEventListener("click", onRowAction);
+          courseListEl.querySelectorAll('[data-action="edit"]').forEach(function (btn) {
+            btn.addEventListener("click", function () {
+              openEditModal(btn.getAttribute("data-id"));
+            });
           });
         }
 
@@ -951,14 +953,6 @@
           resetForm();
         });
 
-        /* ---- Row actions ---- */
-        function onRowAction(e) {
-          const action = e.currentTarget.getAttribute("data-action");
-          const id = e.currentTarget.getAttribute("data-id");
-          if (action === "edit") openEditModal(id);
-          else if (action === "delete") confirmDelete(id);
-        }
-
         /* ---- Edit modal ---- */
         let editingId = null;
 
@@ -1051,15 +1045,11 @@
         });
 
         /* ---- Delete ---- */
-        function confirmDelete(id) {
+        window.deleteCourseById = async function (id) {
           const course = courses.find((c) => String(c.id) === String(id));
           if (!course) return;
-          const ok = window.confirm('Delete "' + course.name + '"? This cannot be undone.');
-          if (!ok) return;
-          deleteCourseById(id);
-        }
+          if (!window.confirm('Delete "' + course.name + '"? This cannot be undone.')) return;
 
-        async function deleteCourseById(id) {
           const row = courseListEl.querySelector('tr[data-id="' + CSS.escape(String(id)) + '"]');
           const deleteBtn = row
             ? row.querySelector('[data-action="delete"]')
@@ -1084,7 +1074,7 @@
               deleteBtn.textContent = deleteBtn.dataset.orig || "Remove";
             }
           }
-        }
+        };
 
         /* ---- Init ---- */
         fetchCourses();
